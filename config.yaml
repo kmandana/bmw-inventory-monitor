@@ -1,0 +1,107 @@
+# BMW Pre-Owned Vehicle Search Configuration
+# Clear separation: API filters (fast, broad) vs Pandas filters (precise, custom)
+
+search:
+  # Location settings
+  postal_code: "90717"  # Your zip code
+  radius: 0  # Miles (0 = local dealers only)
+  
+  # === API FILTERS (Sent to BMW API - broad pre-filtering) ===
+  # These filter at BMW's database level before returning results (faster!)
+  # Empty arrays [] mean "include all" for that filter
+  api_filters:
+    series: [X4]  # Models: X1, X2, X3, X4, X5, X6, X7, 2, 3, 4, 5, 6, 7, 8, Z4, i3, i4, i5, i7, iX, XM, "BMW M"
+    
+    years: ["2022", "2023", "2024"]  # Must be strings
+    
+    odometer: "40,000 or less"  # Options: "20,000 or less", "40,000 or less", "60,000 or less", 
+                                 # "80,000 or less", "100,000 or less", "150,000 or less", "200,000 or less"
+    
+    drivetrain: [AWD]  # Options: AWD, RWD, FWD (empty [] = all)
+    
+    type: [CPO, Used]  # Options: CPO (Certified Pre-Owned), Used, New (empty [] = all)
+    
+    body_style: []  # Options: SUV, Sedan, Coupe, Convertible, "Gran Coupe", Wagon, Hatchback (empty [] = all)
+    
+    transmission: []  # Options: Automatic, Manual (empty [] = all, usually automatic anyway)
+    
+    fuel_type: []  # Options: Gasoline, Hybrid, Electric, Diesel (empty [] = all)
+    
+    exterior_color: []  # Leave empty to search all colors, or specify: Black, White, Gray, Blue, Silver, Red, etc.
+    
+    interior_color: []  # Leave empty to search all colors, or specify: Black, Brown, Red, Beige, etc.
+    
+    options: []  # Specific BMW option codes if you know them
+  
+  # === PANDAS FILTERS (Applied to API results - precise custom filtering) ===
+  # These run on the results returned by the API (more flexible logic)
+  pandas_filters:
+    max_price: 49999  # Exact price cutoff (API price ranges auto-calculated from this!)
+    
+    exclude_exterior_meta: [Beige, White]  # Color categories to exclude
+    
+    # INCLUDE vehicles WITH these package codes (OR vehicles with null package codes)
+    # This keeps vehicles that HAVE M Sport packages or have missing package info
+    include_packages:
+      - code: "0ZM4"
+        description: "M Sport Package"
+      - code: "0337"
+        description: "M Sport Package 2"
+
+
+# === PREFERRED VEHICLE DETECTION ===
+# Complex logic for your dream car combinations (uses Pandas for AND/OR conditions)
+preferences:
+  combinations:
+    - name: "Brooklyn Gray + Red Interior"
+      exterior_contains: "Brooklyn"  # Partial match in exterior field
+      exterior_meta: "Gray"
+      interior_meta: "Red"
+    
+    - name: "Red Exterior + Brown Interior"
+      exterior_meta: "Red"
+      interior_meta: "Brown"
+    
+    - name: "Black Exterior + Red Interior"
+      exterior_meta: "Black"
+      interior_meta: "Red"
+
+
+# === MODEL-SPECIFIC SETTINGS ===
+model_specific:
+  # For X3 and X4: separate M40i trims into their own Excel file and database collection
+  separate_m40i: [X3, X4]
+
+
+# === EMAIL SETTINGS ===
+email:
+  subject: "BMW Preowned"  # Email subject line
+  # Recipient email is read from secrets.ini (to_email)
+
+
+# === API CONFIGURATION ===
+# (Usually don't need to change these)
+api:
+  url: "https://inventoryservices.bmwdealerprograms.com/vehicle"
+  page_size: 100  # Max: 100
+  sort_by: "distance"  # Options: distance, price, year, odometer
+  sort_direction: "asc"  # asc or desc
+
+
+# === DATABASE SETTINGS ===
+database:
+  file: "bmw_vehicles.db"  # SQLite database filename
+  # Collections: X3, X4, X3_M40i, X4_M40i (auto-created based on models searched)
+
+
+# === OUTPUT FOLDERS ===
+output:
+  excel_dir: "output/excel"  # Excel files saved here
+  database_dir: "output/database"  # SQLite database saved here
+  logs_dir: "logs"  # Log files saved here
+
+
+# === RATE LIMITING ===
+# Be respectful to BMW's servers - add delays between API requests
+rate_limiting:
+  delay_between_requests: 2  # Seconds to wait between paginated API requests (minimum: 1)

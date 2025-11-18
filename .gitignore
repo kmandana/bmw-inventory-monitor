@@ -1,0 +1,26 @@
+# Python-generated files
+__pycache__/
+**/__pycache__/
+*.py[oc]
+*.pyc
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Secrets (email credentials)
+secrets.ini
+
+# Output folder (database, excel, logs)
+output/
+logs/
